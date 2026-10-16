@@ -8,6 +8,8 @@ import { StarsBackground } from "@/components/layout/StarsBackground";
 import { FavoritesPanel } from "@/components/FavoritesPanel";
 import { DetailModal } from "@/components/DetailModal";
 import { LangNotice } from "@/components/LangNotice";
+import { SmoothScroll } from "@/components/layout/SmoothScroll";
+import { WandCursor } from "@/components/layout/WandCursor";
 
 const cinzel = Cinzel({
   variable: "--font-cinzel",
@@ -42,18 +44,21 @@ export default function RootLayout({
       lang="en"
       className={`${cinzel.variable} ${ebGaramond.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-canvas text-text-primary font-serif selection:bg-gold/30 selection:text-gold">
-        <AppProvider>
-          <StarsBackground />
-          <LangNotice />
-          <Navbar />
-          <main className="flex-1 flex flex-col relative z-10">
-            {children}
-          </main>
-          <Footer />
-          <FavoritesPanel />
-          <DetailModal />
-        </AppProvider>
+      <body className="min-h-full flex flex-col bg-canvas text-text-primary font-serif selection:bg-gold/30 selection:text-gold overflow-x-clip">
+        <SmoothScroll>
+          <WandCursor />
+          <AppProvider>
+            <StarsBackground />
+            <LangNotice />
+            <Navbar />
+            <main className="flex-1 flex flex-col relative z-10">
+              {children}
+            </main>
+            <Footer />
+            <FavoritesPanel />
+            <DetailModal />
+          </AppProvider>
+        </SmoothScroll>
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { usePotterData } from "@/hooks/usePotterData";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Spell, SpellFilterState } from "@/types";
@@ -90,7 +91,7 @@ export default function SpellsPage() {
       </div>
 
       {/* Toolbar */}
-      <div className="sticky top-[72px] z-30 bg-canvas/95 backdrop-blur-md border-y border-border-dark py-4 mb-8 space-y-4">
+      <div className="bg-surface border border-border-dark rounded-[2px] p-4 sm:p-5 mb-8 space-y-4">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
           <SearchBar
             onSearchChange={(val) => {
@@ -136,11 +137,22 @@ export default function SpellsPage() {
         <EmptyState onReset={handleResetFilters} />
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {paginatedItems.map((spell) => (
-              <SpellCard key={spell.index} spell={spell} />
-            ))}
-          </div>
+          <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AnimatePresence mode="popLayout">
+              {paginatedItems.map((spell) => (
+                <motion.div
+                  layout
+                  key={spell.index}
+                  initial={{ opacity: 0, scale: 0.94 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.94 }}
+                  transition={{ duration: 0.28, ease: "easeOut" }}
+                >
+                  <SpellCard spell={spell} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
 
           <Pagination
             currentPage={currentPage}

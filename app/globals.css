@@ -7,18 +7,18 @@
   --color-parchment: #ECE6DC;
   --color-parchment-border: #D5CEBF;
   --color-ink: #1A1A1A;
-  --color-crimson: #8B2222;
-  --color-gold: #C5A059;
-  --color-text-primary: #F5F5F7;
-  --color-text-secondary: #9AA0A6;
-  --color-border-dark: #24282D;
-  --color-gryffindor: #740001;
-  --color-slytherin: #1A472A;
-  --color-ravenclaw: #0E1A40;
-  --color-hufflepuff: #D49B24;
+  --color-crimson: #9E2A2B;
+  --color-gold: #E5B869;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #C5CBD3;
+  --color-border-dark: #2A2F36;
+  --color-gryffindor: #8B0000;
+  --color-slytherin: #1E5631;
+  --color-ravenclaw: #1B2A56;
+  --color-hufflepuff: #E0A628;
 
-  --font-serif: var(--font-garamond), Georgia, serif;
-  --font-display: var(--font-cinzel), "Times New Roman", serif;
+  --font-serif: var(--font-garamond), "Georgia", "Times New Roman", serif;
+  --font-display: var(--font-cinzel), "Georgia", serif;
   --font-mono: var(--font-mono), monospace;
 }
 
@@ -32,8 +32,11 @@
 
 html, body {
   background-color: var(--canvas);
-  color: #F5F5F7;
+  color: #FFFFFF;
   min-height: 100%;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Display headings */

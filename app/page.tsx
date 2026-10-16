@@ -1,12 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
+import gsap from "gsap";
 import { ArrowRight, Wand2, Sparkles, Users, Shield, RefreshCw } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useApp } from "@/context/AppContext";
 import { fetchPotter, fetchPotterRandom } from "@/lib/api";
+import { triggerSpellBurst } from "@/lib/burst";
 import type { Character, Spell, Book } from "@/types";
 import { CharacterCard } from "@/components/cards/CharacterCard";
 import { SpellCard } from "@/components/cards/SpellCard";
@@ -15,12 +18,68 @@ import { BookCard } from "@/components/cards/BookCard";
 export default function HomePage() {
   const { lang, t } = useTranslation();
   const { setActiveModalItem } = useApp();
+  const shouldReduceMotion = useReducedMotion();
+  const { scrollY } = useScroll();
+  const heroContainerRef = useRef<HTMLDivElement>(null);
+
+  // Smooth parallax scroll transforms
+  const heroTextY = useTransform(scrollY, [0, 600], [0, 50]);
+  const heroFrameY = useTransform(scrollY, [0, 600], [0, -40]);
+  const heroBadgeY = useTransform(scrollY, [0, 600], [0, 25]);
 
   const [featuredCharacters, setFeaturedCharacters] = useState<Character[]>([]);
   const [featuredBooks, setFeaturedBooks] = useState<Book[]>([]);
   const [randomSpell, setRandomSpell] = useState<Spell | null>(null);
   const [randomCharacter, setRandomCharacter] = useState<Character | null>(null);
   const [isLoadingSpell, setIsLoadingSpell] = useState(false);
+
+  // GSAP Cinematic Entrance & Continuous Idle Float
+  useEffect(() => {
+    if (shouldReduceMotion) return;
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+      tl.fromTo(
+        ".hero-anim-kicker",
+        { opacity: 0, y: -15 },
+        { opacity: 1, y: 0, duration: 0.6 }
+      )
+        .fromTo(
+          ".hero-anim-title",
+          { opacity: 0, y: 35, filter: "blur(8px)" },
+          { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.85 },
+          "-=0.35"
+        )
+        .fromTo(
+          ".hero-anim-subtitle",
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.7 },
+          "-=0.5"
+        )
+        .fromTo(
+          ".hero-anim-cta",
+          { opacity: 0, y: 15 },
+          { opacity: 1, y: 0, duration: 0.6, stagger: 0.1 },
+          "-=0.4"
+        )
+        .fromTo(
+          ".hero-anim-frame",
+          { opacity: 0, scale: 0.94, y: 30 },
+          { opacity: 1, scale: 1, y: 0, duration: 1 },
+          "-=0.7"
+        );
+
+      // Organic subtle breathing float on the Gothic Arch
+      gsap.to(".hero-anim-frame", {
+        y: "-=8",
+        duration: 3.2,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+      });
+    }, heroContainerRef);
+
+    return () => ctx.revert();
+  }, [shouldReduceMotion]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -49,7 +108,10 @@ export default function HomePage() {
     };
   }, [lang]);
 
-  const handleCastAnotherSpell = async () => {
+  const handleCastAnotherSpell = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+    if (e) {
+      triggerSpellBurst(e.clientX, e.clientY, 16);
+    }
     setIsLoadingSpell(true);
     try {
       const spell = await fetchPotterRandom<Spell>(lang, "spells");
@@ -61,7 +123,10 @@ export default function HomePage() {
     }
   };
 
-  const handleRandomDiscovery = async () => {
+  const handleRandomDiscovery = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+    if (e) {
+      triggerSpellBurst(e.clientX, e.clientY, 20);
+    }
     try {
       const char = await fetchPotterRandom<Character>(lang, "characters");
       if (char) {
@@ -75,29 +140,35 @@ export default function HomePage() {
   return (
     <div className="flex flex-col w-full">
       {/* 1. HERO SECTION */}
-      <section className="relative overflow-hidden border-b border-border-dark py-16 sm:py-24 lg:py-32">
+      <section ref={heroContainerRef} className="relative overflow-hidden border-b border-border-dark py-16 sm:py-24 lg:py-32">
         <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* Hero Left Content */}
-          <div className="lg:col-span-7 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface border border-gold/30 rounded-[2px]">
+          {/* Hero Left Content with Parallax */}
+          <motion.div
+            style={{ y: shouldReduceMotion ? 0 : heroTextY }}
+            className="lg:col-span-7 space-y-6 will-change-transform"
+          >
+            <motion.div
+              style={{ y: shouldReduceMotion ? 0 : heroBadgeY }}
+              className="hero-anim-kicker inline-flex items-center gap-2 px-3 py-1 bg-surface border border-gold/30 rounded-[2px]"
+            >
               <Sparkles className="w-3.5 h-3.5 text-gold" />
               <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-gold font-bold">
                 {t.hero.kicker}
               </span>
-            </div>
+            </motion.div>
 
-            <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-text-primary leading-[1.05]">
+            <h1 className="hero-anim-title font-serif text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-text-primary leading-[1.05]">
               {t.hero.title}
             </h1>
 
-            <p className="font-serif text-base sm:text-lg text-text-secondary max-w-xl leading-relaxed">
+            <p className="hero-anim-subtitle font-serif text-base sm:text-lg text-text-secondary max-w-xl leading-relaxed">
               {t.hero.subtitle}
             </p>
 
             <div className="flex flex-wrap gap-4 pt-4">
               <Link
                 href="/characters"
-                className="inline-flex items-center gap-2.5 px-6 py-3.5 bg-gold hover:bg-gold/90 text-canvas font-mono text-xs uppercase tracking-widest font-bold rounded-[2px] transition-colors"
+                className="hero-anim-cta inline-flex items-center gap-2.5 px-6 py-3.5 bg-gold hover:bg-gold/90 text-canvas font-mono text-xs uppercase tracking-widest font-bold rounded-[2px] transition-colors"
               >
                 <span>{t.hero.exploreBtn}</span>
                 <ArrowRight className="w-4 h-4" />
@@ -106,16 +177,19 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={handleRandomDiscovery}
-                className="inline-flex items-center gap-2 px-6 py-3.5 bg-surface hover:bg-surface-elevated border border-border-dark hover:border-gold/50 text-text-primary font-mono text-xs uppercase tracking-widest rounded-[2px] transition-colors cursor-pointer"
+                className="hero-anim-cta inline-flex items-center gap-2 px-6 py-3.5 bg-surface hover:bg-surface-elevated border border-border-dark hover:border-gold/50 text-text-primary font-mono text-xs uppercase tracking-widest rounded-[2px] transition-colors cursor-pointer"
               >
                 <Sparkles className="w-4 h-4 text-gold" />
                 <span>{t.hero.randomBtn}</span>
               </button>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Hero Right: Gothic Architectural Frame */}
-          <div className="lg:col-span-5 flex justify-center lg:justify-end">
+          {/* Hero Right: Gothic Architectural Frame with Parallax */}
+          <motion.div
+            style={{ y: shouldReduceMotion ? 0 : heroFrameY }}
+            className="hero-anim-frame lg:col-span-5 flex justify-center lg:justify-end will-change-transform"
+          >
             <div className="relative w-full max-w-sm aspect-[4/5] p-3 bg-surface border border-gold/40 rounded-[2px] shadow-2xl">
               {/* Inner Arch Frame */}
               <div className="w-full h-full border border-border-dark p-4 flex flex-col justify-between relative overflow-hidden bg-canvas">
@@ -167,7 +241,7 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 

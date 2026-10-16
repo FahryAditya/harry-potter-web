@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion, useReducedMotion } from "framer-motion";
 import { Star, Menu, X, Sparkles, BookOpen, Users, Wand2, Shield, Settings } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFavorites } from "@/hooks/useFavorites";
@@ -14,6 +15,41 @@ export function Navbar() {
   const { t } = useTranslation();
   const { favorites, setIsFavoritesDrawerOpen } = useFavorites();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
+
+  // Track scroll direction: down -> slide out to right, up -> slide back in
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Always show navbar at the top of the viewport
+      if (currentScrollY <= 20) {
+        setIsHidden(false);
+        lastScrollY = currentScrollY;
+        return;
+      }
+
+      const diff = currentScrollY - lastScrollY;
+      // Filter out micro-scroll jitters
+      if (Math.abs(diff) < 6) return;
+
+      if (diff > 0 && currentScrollY > 72) {
+        // Scrolling down -> hide moving to the right
+        setIsHidden(true);
+      } else if (diff < 0) {
+        // Scrolling up -> reveal from the right
+        setIsHidden(false);
+      }
+
+      lastScrollY = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const navLinks = [
     { href: "/", label: t.nav.home, icon: Sparkles },
@@ -25,7 +61,22 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 h-[72px] bg-canvas/90 backdrop-blur-md border-b border-border-dark flex items-center">
+    <motion.header
+      initial={false}
+      animate={
+        shouldReduceMotion
+          ? { opacity: isHidden && !mobileMenuOpen ? 0 : 1 }
+          : {
+              x: isHidden && !mobileMenuOpen ? "100%" : "0%",
+              opacity: isHidden && !mobileMenuOpen ? 0 : 1,
+            }
+      }
+      transition={{
+        duration: 0.38,
+        ease: [0.16, 1, 0.3, 1], // Smooth snappy cubic-bezier
+      }}
+      className="sticky top-0 z-40 h-[72px] bg-canvas/90 backdrop-blur-md border-b border-border-dark flex items-center will-change-transform shadow-[0_4px_24px_rgba(0,0,0,0.35)]"
+    >
       <div className="max-w-[1320px] w-full mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Brand / Logo */}
         <Link
@@ -56,7 +107,7 @@ export function Navbar() {
                 href={link.href}
                 className={`flex items-center gap-2 px-3 py-2 text-xs font-serif uppercase tracking-wider rounded-[2px] transition-all ${
                   isActive
-                    ? "bg-surface text-gold border border-gold/40"
+                    ? "bg-surface text-gold border border-gold/40 shadow-sm"
                     : "text-text-secondary hover:text-text-primary hover:bg-surface/50 border border-transparent"
                 }`}
               >
@@ -119,6 +170,6 @@ export function Navbar() {
           })}
         </div>
       )}
-    </header>
+    </motion.header>
   );
 }

@@ -20,6 +20,9 @@ export function CharacterCard({ character }: CharacterCardProps) {
   const { setActiveModalItem } = useApp();
   const shouldReduceMotion = useReducedMotion();
   const [imgSrc, setImgSrc] = useState(character.image || "/fallback-avatar.svg");
+  const [rotateX, setRotateX] = useState(0);
+  const [rotateY, setRotateY] = useState(0);
+  const [glarePos, setGlarePos] = useState({ x: 50, y: 50, opacity: 0 });
 
   const houseStyle = HOUSE_THEME[character.hogwartsHouse];
 
@@ -32,14 +35,49 @@ export function CharacterCard({ character }: CharacterCardProps) {
     image: character.image,
   };
 
+  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (shouldReduceMotion) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    setRotateX(-((y - centerY) / centerY) * 7);
+    setRotateY(((x - centerX) / centerX) * 7);
+    setGlarePos({
+      x: (x / rect.width) * 100,
+      y: (y / rect.height) * 100,
+      opacity: 0.25,
+    });
+  };
+
+  const handleCardMouseLeave = () => {
+    setRotateX(0);
+    setRotateY(0);
+    setGlarePos((prev) => ({ ...prev, opacity: 0 }));
+  };
+
   return (
     <motion.div
-      whileHover={shouldReduceMotion ? undefined : { y: -4, borderColor: "#C5A059" }}
+      animate={{ rotateX, rotateY }}
+      whileHover={shouldReduceMotion ? undefined : { y: -4, borderColor: "#E5B869" }}
       whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
       transition={{ duration: 0.2 }}
-      className="group relative flex flex-col bg-surface border border-border-dark rounded-[2px] overflow-hidden transition-shadow hover:shadow-[0_4px_24px_rgba(197,160,89,0.12)] cursor-pointer"
+      onMouseMove={handleCardMouseMove}
+      onMouseLeave={handleCardMouseLeave}
+      style={{ transformStyle: "preserve-3d", perspective: 1000 }}
+      className="group relative flex flex-col bg-surface border border-border-dark rounded-[2px] overflow-hidden transition-shadow hover:shadow-[0_8px_28px_rgba(229,184,105,0.18)] cursor-pointer will-change-transform"
       onClick={() => setActiveModalItem(character)}
     >
+      {/* Specular Gilded Glare */}
+      <div
+        className="absolute inset-0 pointer-events-none transition-opacity duration-300 z-20 rounded-[2px]"
+        style={{
+          opacity: glarePos.opacity,
+          background: `radial-gradient(circle at ${glarePos.x}% ${glarePos.y}%, rgba(229,184,105,0.22), transparent 60%)`,
+        }}
+      />
       {/* 3:4 Aspect Ratio Framed Dark Portrait */}
       <div className="relative w-full aspect-[3/4] bg-surface-elevated overflow-hidden border-b border-border-dark">
         <Image

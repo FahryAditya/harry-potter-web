@@ -50,7 +50,7 @@ export const en: TranslationKeys = {
     pagesUnder300: "Under 300 pages",
     pages300to500: "300 to 500 pages",
     pagesOver500: "Over 500 pages",
-    animal: "Crest Crest Animal",
+    animal: "Crest Animal",
     color: "House Color",
     startingLetter: "Initial Rune / Letter",
     keyword: "Filter by Effect Keyword",
