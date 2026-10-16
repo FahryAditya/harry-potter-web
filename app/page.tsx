@@ -14,6 +14,7 @@ import type { Character, Spell, Book } from "@/types";
 import { CharacterCard } from "@/components/cards/CharacterCard";
 import { SpellCard } from "@/components/cards/SpellCard";
 import { BookCard } from "@/components/cards/BookCard";
+import { BookCardSkeleton, CharacterCardSkeleton, SpellCardSkeleton } from "@/components/ui/Skeleton";
 
 export default function HomePage() {
   const { lang, t } = useTranslation();
@@ -27,8 +28,11 @@ export default function HomePage() {
   const heroFrameY = useTransform(scrollY, [0, 600], [0, -40]);
   const heroBadgeY = useTransform(scrollY, [0, 600], [0, 25]);
 
+  // Decoupled Section States (Streaming / Independent UX)
   const [featuredCharacters, setFeaturedCharacters] = useState<Character[]>([]);
+  const [charsLoading, setCharsLoading] = useState(true);
   const [featuredBooks, setFeaturedBooks] = useState<Book[]>([]);
+  const [booksLoading, setBooksLoading] = useState(true);
   const [randomSpell, setRandomSpell] = useState<Spell | null>(null);
   const [randomCharacter, setRandomCharacter] = useState<Character | null>(null);
   const [isLoadingSpell, setIsLoadingSpell] = useState(false);
@@ -84,24 +88,38 @@ export default function HomePage() {
   useEffect(() => {
     let isCancelled = false;
 
-    // Load featured characters and books for the landing page
-    Promise.all([
-      fetchPotter<Character>(lang, "characters", { max: 4 }),
-      fetchPotter<Book>(lang, "books", { max: 3 }),
-      fetchPotterRandom<Spell>(lang, "spells"),
-      fetchPotterRandom<Character>(lang, "characters"),
-    ])
-      .then(([chars, books, spell, randChar]) => {
+    // Decoupled Section Streaming (independent loading)
+    setBooksLoading(true);
+    fetchPotter<Book>(lang, "books", { max: 3 })
+      .then((books) => {
         if (!isCancelled) {
-          setFeaturedCharacters(chars);
           setFeaturedBooks(books);
-          setRandomSpell(spell);
-          setRandomCharacter(randChar);
+          setBooksLoading(false);
         }
       })
       .catch(() => {
-        // Safe fallback; error states handled gracefully
+        if (!isCancelled) setBooksLoading(false);
       });
+
+    setCharsLoading(true);
+    fetchPotter<Character>(lang, "characters", { max: 4 })
+      .then((chars) => {
+        if (!isCancelled) {
+          setFeaturedCharacters(chars);
+          setCharsLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!isCancelled) setCharsLoading(false);
+      });
+
+    fetchPotterRandom<Spell>(lang, "spells").then((spell) => {
+      if (!isCancelled && spell) setRandomSpell(spell);
+    }).catch(() => {});
+
+    fetchPotterRandom<Character>(lang, "characters").then((randChar) => {
+      if (!isCancelled && randChar) setRandomCharacter(randChar);
+    }).catch(() => {});
 
     return () => {
       isCancelled = true;
@@ -245,14 +263,16 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 2. BAND PERKAMEN: "ARCHIVES OF MAGIC" */}
+      {/* 2. BAND PERKAMEN: "ARCHIVES OF MAGIC" (BOOKS) */}
       <section className="py-16 bg-surface border-b border-border-dark relative">
         <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-10 gap-4">
             <div>
-              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-gold font-bold block mb-1">
-                {t.landing.archivesKicker}
-              </span>
+              <div className="border-l-2 border-gold pl-3 mb-1">
+                <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-gold font-bold block">
+                  {t.landing.archivesKicker}
+                </span>
+              </div>
               <h2 className="font-serif text-3xl font-bold tracking-tight text-text-primary">
                 {t.landing.archivesTitle}
               </h2>
@@ -269,11 +289,19 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredBooks.map((book) => (
-              <BookCard key={book.index} book={book} />
-            ))}
-          </div>
+          {booksLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <BookCardSkeleton />
+              <BookCardSkeleton />
+              <BookCardSkeleton />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredBooks.map((book) => (
+                <BookCard key={book.index} book={book} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -282,9 +310,11 @@ export default function HomePage() {
         <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-10 gap-4">
             <div>
-              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-gold font-bold block mb-1">
-                {t.landing.featuredCharactersKicker}
-              </span>
+              <div className="border-l-2 border-gold pl-3 mb-1">
+                <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-gold font-bold block">
+                  {t.landing.featuredCharactersKicker}
+                </span>
+              </div>
               <h2 className="font-serif text-3xl font-bold tracking-tight text-text-primary">
                 {t.landing.featuredCharactersTitle}
               </h2>
@@ -298,24 +328,35 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredCharacters.map((char) => (
-              <CharacterCard key={char.index} character={char} />
-            ))}
-          </div>
+          {charsLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <CharacterCardSkeleton />
+              <CharacterCardSkeleton />
+              <CharacterCardSkeleton />
+              <CharacterCardSkeleton />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featuredCharacters.map((char) => (
+                <CharacterCard key={char.index} character={char} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* 4. SPLIT 50/50: MANTRA ACAK & DAILY PROPHET SHOWCASE */}
+      {/* 4. SPLIT 50/50: MANTRA ACAK & DAILY PROPHET PRINT BROADSHEET */}
       <section className="py-16 bg-surface-elevated/40">
         <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           {/* 50% Left: Interactive Incantation Discovery */}
           <div className="lg:col-span-6 flex flex-col justify-between p-6 sm:p-8 bg-surface border border-border-dark rounded-[2px]">
             <div>
               <div className="flex items-center justify-between mb-4">
-                <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-crimson font-bold">
-                  {t.landing.discoveryKicker}
-                </span>
+                <div className="border-l-2 border-crimson pl-3">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-crimson font-bold block">
+                    {t.landing.discoveryKicker}
+                  </span>
+                </div>
                 <button
                   type="button"
                   onClick={handleCastAnotherSpell}
@@ -337,9 +378,7 @@ export default function HomePage() {
               {randomSpell ? (
                 <SpellCard spell={randomSpell} />
               ) : (
-                <div className="p-8 text-center text-text-secondary font-serif text-sm bg-parchment text-ink rounded-[2px]">
-                  Consulting wand registry...
-                </div>
+                <SpellCardSkeleton />
               )}
             </div>
 
@@ -354,66 +393,74 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* 50% Right: Daily Prophet Archival Showcase (Substituted for trailer) */}
-          <div className="lg:col-span-6 flex flex-col justify-between p-6 sm:p-8 bg-canvas border border-border-dark rounded-[2px] relative overflow-hidden">
+          {/* 50% Right: The Daily Prophet Newsprint Broadsheet (Task 3.2 Redesign) */}
+          <div className="lg:col-span-6 flex flex-col justify-between p-6 sm:p-8 bg-parchment text-ink border-2 border-parchment-border rounded-[2px] shadow-2xl relative overflow-hidden">
             <div className="space-y-4">
-              <div className="border-b-2 border-border-dark pb-3 text-center">
-                <span className="font-serif text-3xl sm:text-4xl font-extrabold tracking-[0.2em] text-gold uppercase block">
-                  The Daily Prophet
+              {/* Authentic Masthead with Double-Line Border */}
+              <div className="border-t-2 border-b-2 border-ink py-2 text-center">
+                <span className="font-serif text-3xl sm:text-4xl font-black tracking-[0.18em] text-ink uppercase block leading-none">
+                  THE DAILY PROPHET
                 </span>
-                <span className="font-mono text-[9px] uppercase tracking-widest text-text-secondary">
-                  Special Archival Edition • Ministry of Magic Archives
-                </span>
+                <div className="flex items-center justify-between font-mono text-[9px] uppercase tracking-widest text-ink/80 pt-1.5 border-t border-ink/40 mt-1.5 px-1">
+                  <span>Vol. CCXCIV • No. 14,082</span>
+                  <span>Ministry Archival Edition</span>
+                  <span>Two Sickles</span>
+                </div>
               </div>
 
-              <div className="p-5 bg-surface border border-border-dark/80 rounded-[2px] space-y-3">
-                <span className="font-mono text-[10px] uppercase tracking-widest text-crimson font-bold block">
-                  Archive Intelligence
-                </span>
-                <h3 className="font-serif text-xl sm:text-2xl font-bold text-text-primary leading-tight">
+              {/* Lead Article with Drop Cap */}
+              <div className="p-4 bg-white/50 border border-ink/20 rounded-[2px] space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-crimson" />
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-crimson font-bold">
+                    Historical Archival Dispatch
+                  </span>
+                </div>
+                <h3 className="font-serif text-xl sm:text-2xl font-bold text-ink leading-tight">
                   Four Ancient Houses of Hogwarts Stand Eternal
                 </h3>
-                <p className="font-serif text-sm text-text-secondary leading-relaxed">
-                  Founded over a millennium ago by Godric Gryffindor, Helga Hufflepuff, Rowena Ravenclaw, and Salazar Slytherin, Hogwarts School remains the premier sanctuary for European witchcraft and wizardry.
+                <p className="font-serif text-sm text-ink/90 leading-relaxed text-justify first-letter:float-left first-letter:text-4xl first-letter:font-bold first-letter:font-serif first-letter:text-crimson first-letter:mr-2.5 first-letter:leading-none">
+                  Founded over a millennium ago by Godric Gryffindor, Helga Hufflepuff, Rowena Ravenclaw, and Salazar Slytherin, Hogwarts School remains the premier sanctuary for European witchcraft and wizardry. The sacred wards, bound to the ancient castle foundations, continue to guard generations of young wizards against the encroaching shadows.
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 text-xs font-mono">
+              {/* Dispatch Column Links */}
+              <div className="grid grid-cols-2 gap-3 text-xs font-mono">
                 <Link
                   href="/houses"
-                  className="p-4 bg-surface hover:bg-surface-elevated border border-border-dark hover:border-gold/40 rounded-[2px] transition-colors block text-center"
+                  className="p-3 bg-white/60 hover:bg-white border border-ink/30 hover:border-ink rounded-[2px] transition-colors block text-center text-ink"
                 >
-                  <Shield className="w-5 h-5 text-gold mx-auto mb-1.5" />
-                  <span className="uppercase text-text-primary block font-serif text-sm font-bold">
+                  <Shield className="w-4 h-4 text-crimson mx-auto mb-1" />
+                  <span className="uppercase block font-serif text-xs font-bold text-ink">
                     Four Houses
                   </span>
-                  <span className="text-text-secondary text-[10px]">
-                    Inspect Banners & Lore
+                  <span className="text-ink/70 text-[9px]">
+                    Heraldry & Founder Lore
                   </span>
                 </Link>
 
                 <Link
                   href="/characters"
-                  className="p-4 bg-surface hover:bg-surface-elevated border border-border-dark hover:border-gold/40 rounded-[2px] transition-colors block text-center"
+                  className="p-3 bg-white/60 hover:bg-white border border-ink/30 hover:border-ink rounded-[2px] transition-colors block text-center text-ink"
                 >
-                  <Users className="w-5 h-5 text-gold mx-auto mb-1.5" />
-                  <span className="uppercase text-text-primary block font-serif text-sm font-bold">
+                  <Users className="w-4 h-4 text-crimson mx-auto mb-1" />
+                  <span className="uppercase block font-serif text-xs font-bold text-ink">
                     Alumni Records
                   </span>
-                  <span className="text-text-secondary text-[10px]">
-                    Filtered by Allegiance
+                  <span className="text-ink/70 text-[9px]">
+                    Wizard Chronicles
                   </span>
                 </Link>
               </div>
             </div>
 
-            <div className="pt-6 mt-6 border-t border-border-dark flex items-center justify-between text-xs font-mono text-text-secondary">
-              <span>Hogwarts Archives Division</span>
+            <div className="pt-4 mt-6 border-t border-ink/30 flex items-center justify-between text-xs font-mono text-ink/75">
+              <span>Archives Registry Bureau</span>
               <Link
                 href="/settings"
-                className="text-gold hover:underline uppercase tracking-wider"
+                className="text-crimson hover:underline uppercase tracking-wider font-bold"
               >
-                Manage Vault & Preferences
+                Vault Preferences &rarr;
               </Link>
             </div>
           </div>

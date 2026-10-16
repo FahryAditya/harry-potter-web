@@ -25,10 +25,10 @@ export function SpellCard({ spell }: SpellCardProps) {
 
   return (
     <motion.div
-      whileHover={shouldReduceMotion ? undefined : { y: -4, borderColor: "#8B2222" }}
+      whileHover={shouldReduceMotion ? undefined : { y: -5, borderColor: "#E5B869" }}
       whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
-      transition={{ duration: 0.2 }}
-      className="group relative flex flex-col justify-between p-6 bg-parchment border border-parchment-border rounded-[2px] min-h-[220px] transition-shadow hover:shadow-[0_6px_20px_rgba(0,0,0,0.35)] cursor-pointer text-ink"
+      transition={{ duration: 0.22, ease: "easeOut" }}
+      className="group relative flex flex-col justify-between p-6 bg-parchment border border-parchment-border rounded-[2px] min-h-[220px] transition-all duration-300 hover:shadow-[0_12px_32px_rgba(229,184,105,0.25)] cursor-pointer text-ink will-change-transform"
       onClick={() => setActiveModalItem(spell)}
     >
       {/* Decorative Corner Flairs for Gothic Scroll Feel */}
