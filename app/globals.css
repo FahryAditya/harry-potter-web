@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+@theme {
+  --color-canvas: #0A0B0D;
+  --color-surface: #131518;
+  --color-surface-elevated: #1C2026;
+  --color-parchment: #ECE6DC;
+  --color-parchment-border: #D5CEBF;
+  --color-ink: #1A1A1A;
+  --color-crimson: #8B2222;
+  --color-gold: #C5A059;
+  --color-text-primary: #F5F5F7;
+  --color-text-secondary: #9AA0A6;
+  --color-border-dark: #24282D;
+  --color-gryffindor: #740001;
+  --color-slytherin: #1A472A;
+  --color-ravenclaw: #0E1A40;
+  --color-hufflepuff: #D49B24;
+
+  --font-serif: var(--font-garamond), Georgia, serif;
+  --font-display: var(--font-cinzel), "Times New Roman", serif;
+  --font-mono: var(--font-mono), monospace;
+}
+
+:root {
+  --canvas: #0A0B0D;
+  --surface: #131518;
+  --surface-elevated: #1C2026;
+  --border-dark: #24282D;
+  --gold: #C5A059;
+}
+
+html, body {
+  background-color: var(--canvas);
+  color: #F5F5F7;
+  min-height: 100%;
+}
+
+/* Display headings */
+h1, h2, h3, .font-display {
+  font-family: var(--font-cinzel), Georgia, serif;
+}
+
+/* Pure CSS Star Field */
+.stars-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.stars-layer-1 {
+  width: 1px;
+  height: 1px;
+  background: transparent;
+  box-shadow: 
+    120px 240px #C5A059, 450px 80px #fff, 890px 420px #C5A059, 1340px 180px #fff,
+    210px 650px #fff, 670px 720px #C5A059, 1020px 850px #fff, 1420px 920px #C5A059,
+    70px 120px #fff, 380px 340px #C5A059, 780px 150px #fff, 1180px 480px #C5A059,
+    250px 880px #C5A059, 560px 960px #fff, 940px 600px #fff, 1300px 740px #C5A059;
+  opacity: 0.35;
+  animation: starTwinkle 6s ease-in-out infinite alternate;
+}
+
+.stars-layer-2 {
+  width: 2px;
+  height: 2px;
+  background: transparent;
+  box-shadow: 
+    300px 150px #C5A059, 720px 290px #fff, 1100px 120px #C5A059, 1480px 410px #fff,
+    180px 420px #fff, 530px 580px #C5A059, 910px 730px #fff, 1260px 810px #C5A059,
+    420px 890px #fff, 840px 980px #C5A059, 1380px 620px #fff, 80px 760px #C5A059;
+  opacity: 0.25;
+  animation: starTwinkle 9s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes starTwinkle {
+  0% {
+    opacity: 0.2;
+    transform: translateY(0px);
+  }
+  50% {
+    opacity: 0.45;
+  }
+  100% {
+    opacity: 0.2;
+    transform: translateY(-8px);
+  }
+}
+
+/* Subtle Gold Shimmer for Skeleton Loader */
+@keyframes goldShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #131518 25%,
+    #1C2026 37%,
+    #24282D 50%,
+    #1C2026 63%,
+    #131518 75%
+  );
+  background-size: 200% 100%;
+  animation: goldShimmer 1.8s ease-in-out infinite;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0A0B0D;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #24282D;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C5A059;
+}

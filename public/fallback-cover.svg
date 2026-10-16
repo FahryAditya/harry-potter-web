@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" width="300" height="450" fill="none">
+  <rect width="300" height="450" fill="#131518" stroke="#24282D" stroke-width="2"/>
+  <rect x="12" y="12" width="276" height="426" stroke="#C5A059" stroke-opacity="0.3" stroke-width="1" stroke-dasharray="4 4"/>
+  <g transform="translate(150, 200)">
+    <!-- Book emblem -->
+    <path d="M-30,-20 C-15,-25 0,-20 0,-10 C0,-20 15,-25 30,-20 L30,25 C15,20 0,25 0,15 C0,25 -15,20 -30,25 Z" fill="#1C2026" stroke="#C5A059" stroke-width="1.5"/>
+    <line x1="0" y1="-10" x2="0" y2="15" stroke="#C5A059" stroke-width="1.5"/>
+  </g>
+  <text x="150" y="270" text-anchor="middle" fill="#9AA0A6" font-family="serif" font-size="12" letter-spacing="2">ARCHIVAL TOME</text>
+  <text x="150" y="290" text-anchor="middle" fill="#C5A059" font-family="serif" font-size="10" letter-spacing="1">HOGWARTS LIBRARY</text>
+</svg>

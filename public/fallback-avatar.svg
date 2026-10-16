@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="300" height="400" fill="none">
+  <rect width="300" height="400" fill="#131518" stroke="#24282D" stroke-width="2"/>
+  <rect x="12" y="12" width="276" height="376" stroke="#C5A059" stroke-opacity="0.3" stroke-width="1"/>
+  <!-- Silhouette of wizard -->
+  <g transform="translate(150, 180)">
+    <circle cx="0" cy="-40" r="30" fill="#1C2026" stroke="#C5A059" stroke-width="1.5"/>
+    <path d="M-55,50 C-55,0 55,0 55,50 Z" fill="#1C2026" stroke="#C5A059" stroke-width="1.5"/>
+    <!-- Pointed hat outline subtle -->
+    <path d="M-35,-55 L0,-105 L35,-55 Z" fill="#1C2026" stroke="#C5A059" stroke-opacity="0.6" stroke-width="1"/>
+  </g>
+  <text x="150" y="270" text-anchor="middle" fill="#9AA0A6" font-family="serif" font-size="11" letter-spacing="2">UNRECORDED PORTRAIT</text>
+  <text x="150" y="290" text-anchor="middle" fill="#C5A059" font-family="serif" font-size="9" letter-spacing="1">MINISTRY ARCHIVES</text>
+</svg>
