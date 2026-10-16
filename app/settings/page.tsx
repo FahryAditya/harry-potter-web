@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Settings as SettingsIcon, Globe, Trash2, AlertTriangle, CheckCircle, Shield } from "lucide-react";
+import { Settings as SettingsIcon, Globe, Trash2, AlertTriangle, CheckCircle, Shield, Sparkles, Feather } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useApp } from "@/context/AppContext";
@@ -12,7 +12,7 @@ import type { SupportedLang } from "@/types";
 export default function SettingsPage() {
   const { lang, setLang, t } = useTranslation();
   const { favorites } = useFavorites();
-  const { resetAllUserData } = useApp();
+  const { resetAllUserData, isReducedMotion, setIsReducedMotion } = useApp();
 
   const [isConfirmingClear, setIsConfirmingClear] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -102,7 +102,62 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {/* 3. Danger Zone */}
+      {/* 3. Arcane Motion & Accessibility Mode (Task 6.2 Mode Tenang) */}
+      <section className="p-6 bg-surface border border-border-dark rounded-[2px] space-y-4">
+        <div className="flex items-center gap-2 text-gold font-mono text-xs uppercase tracking-wider border-b border-border-dark pb-3">
+          <Sparkles className="w-4 h-4" />
+          <span>Motion Choreography & Sanctum Accessibility</span>
+        </div>
+        <p className="font-serif text-xs text-text-secondary leading-relaxed">
+          Configure visual dynamics and kinetic incantations. Enable Mode Tenang (Quiet Scholar Mode) to disable wand spark cursors, 3D card perspective tilt, and complex motion sequences for a gentle, static reading experience.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => setIsReducedMotion(false)}
+            className={`p-4 rounded-[2px] border text-left transition-all flex flex-col justify-between cursor-pointer ${
+              !isReducedMotion
+                ? "bg-gold/15 border-gold text-gold font-bold shadow-sm"
+                : "bg-surface-elevated/40 border-border-dark text-text-primary hover:border-gold/40 hover:text-gold"
+            }`}
+          >
+            <div className="flex items-center justify-between w-full mb-1">
+              <span className="font-mono text-xs uppercase tracking-widest text-gold flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" /> Full Arcane Motion
+              </span>
+              {!isReducedMotion && <span className="text-gold text-xs">● Active</span>}
+            </div>
+            <span className="font-serif text-sm font-medium">Kinetic Hogwarts Dynamics</span>
+            <span className="text-[11px] font-mono text-text-secondary/80 mt-1">
+              Wand sparks cursor, 3D tilt cards, GSAP hero entrance & ambient floating gold dust.
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsReducedMotion(true)}
+            className={`p-4 rounded-[2px] border text-left transition-all flex flex-col justify-between cursor-pointer ${
+              isReducedMotion
+                ? "bg-gold/15 border-gold text-gold font-bold shadow-sm"
+                : "bg-surface-elevated/40 border-border-dark text-text-primary hover:border-gold/40 hover:text-gold"
+            }`}
+          >
+            <div className="flex items-center justify-between w-full mb-1">
+              <span className="font-mono text-xs uppercase tracking-widest text-text-primary flex items-center gap-1.5">
+                <Feather className="w-3.5 h-3.5" /> Mode Tenang (Quiet Scholar)
+              </span>
+              {isReducedMotion && <span className="text-gold text-xs">● Active</span>}
+            </div>
+            <span className="font-serif text-sm font-medium">Gentle Static Archives</span>
+            <span className="text-[11px] font-mono text-text-secondary/80 mt-1">
+              Soft simple fades only. Disables wand cursor trails, 3D card tilt, and intense motion.
+            </span>
+          </button>
+        </div>
+      </section>
+
+      {/* 4. Danger Zone */}
       <section className="p-6 bg-surface border border-crimson/30 rounded-[2px] space-y-4">
         <div className="flex items-center gap-2 text-crimson font-mono text-xs uppercase tracking-wider border-b border-crimson/20 pb-3">
           <AlertTriangle className="w-4 h-4" />

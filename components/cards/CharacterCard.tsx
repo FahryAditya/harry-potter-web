@@ -17,8 +17,9 @@ interface CharacterCardProps {
 
 export function CharacterCard({ character }: CharacterCardProps) {
   const { t } = useTranslation();
-  const { setActiveModalItem } = useApp();
-  const shouldReduceMotion = useReducedMotion();
+  const { setActiveModalItem, isReducedMotion } = useApp();
+  const systemReducedMotion = useReducedMotion();
+  const shouldReduceMotion = systemReducedMotion || isReducedMotion;
   const [imgSrc, setImgSrc] = useState(character.image || "/fallback-avatar.svg");
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
@@ -37,6 +38,7 @@ export function CharacterCard({ character }: CharacterCardProps) {
 
   const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (shouldReduceMotion) return;
+    if (typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;

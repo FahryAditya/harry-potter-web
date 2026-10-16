@@ -2,16 +2,22 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import { useApp } from "@/context/AppContext";
 
 export function WandCursor() {
+  const { isReducedMotion } = useApp();
   const cursorDotRef = useRef<HTMLDivElement>(null);
   const cursorRingRef = useRef<HTMLDivElement>(null);
   const sparksContainerRef = useRef<HTMLDivElement>(null);
   const [isPointerDevice, setIsPointerDevice] = useState(false);
 
   useEffect(() => {
-    // Only enable on non-touch devices with fine pointers
+    // Only enable on non-touch devices with fine pointers and when motion is allowed
     if (typeof window === "undefined") return;
+    if (isReducedMotion) {
+      setIsPointerDevice(false);
+      return;
+    }
     if (!window.matchMedia("(pointer: fine)").matches) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 

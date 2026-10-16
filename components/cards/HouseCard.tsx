@@ -16,8 +16,9 @@ interface HouseCardProps {
 
 export function HouseCard({ house }: HouseCardProps) {
   const { t } = useTranslation();
-  const { setActiveModalItem } = useApp();
-  const shouldReduceMotion = useReducedMotion();
+  const { setActiveModalItem, isReducedMotion } = useApp();
+  const systemReducedMotion = useReducedMotion();
+  const shouldReduceMotion = systemReducedMotion || isReducedMotion;
 
   const theme = HOUSE_THEME[house.house] || {
     bg: "bg-surface",
@@ -40,6 +41,7 @@ export function HouseCard({ house }: HouseCardProps) {
 
   const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (shouldReduceMotion) return;
+    if (typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;

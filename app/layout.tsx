@@ -46,8 +46,8 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-canvas text-text-primary font-serif selection:bg-gold/30 selection:text-gold overflow-x-clip">
         <SmoothScroll>
-          <WandCursor />
           <AppProvider>
+            <WandCursor />
             <StarsBackground />
             <LangNotice />
             <Navbar />

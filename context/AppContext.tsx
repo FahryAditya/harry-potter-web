@@ -23,6 +23,8 @@ interface AppContextValue {
   setIsFavoritesDrawerOpen: (open: boolean) => void;
   activeModalItem: PotterItem | null;
   setActiveModalItem: (item: PotterItem | null) => void;
+  isReducedMotion: boolean;
+  setIsReducedMotion: (val: boolean) => void;
   resetAllUserData: () => void;
 }
 
@@ -34,6 +36,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [favorites, setFavoritesState] = useState<FavoriteItem[]>([]);
   const [isFavoritesDrawerOpen, setIsFavoritesDrawerOpen] = useState(false);
   const [activeModalItem, setActiveModalItem] = useState<PotterItem | null>(null);
+  const [isReducedMotion, setIsReducedMotionState] = useState(false);
 
   // Initialize from localStorage only on client mount to avoid hydration mismatch
   useEffect(() => {
@@ -49,7 +52,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const storedFavs = getUserFavorites(storedUser);
         setFavoritesState(storedFavs);
       }
+
+      // Check quiet mode preference
+      const savedQuiet = localStorage.getItem("potter_quiet_mode");
+      if (savedQuiet !== null) {
+        const val = savedQuiet === "true";
+        setIsReducedMotionState(val);
+        document.documentElement.classList.toggle("reduce-motion", val);
+      } else if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        setIsReducedMotionState(true);
+        document.documentElement.classList.toggle("reduce-motion", true);
+      }
     });
+  }, []);
+
+  const setIsReducedMotion = useCallback((val: boolean) => {
+    setIsReducedMotionState(val);
+    try {
+      localStorage.setItem("potter_quiet_mode", String(val));
+      if (typeof document !== "undefined") {
+        document.documentElement.classList.toggle("reduce-motion", val);
+      }
+    } catch {}
   }, []);
 
   const t = useMemo(() => getTranslation(lang), [lang]);
@@ -152,6 +176,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setIsFavoritesDrawerOpen,
       activeModalItem,
       setActiveModalItem,
+      isReducedMotion,
+      setIsReducedMotion,
       resetAllUserData,
     }),
     [
@@ -167,6 +193,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       isFavorite,
       isFavoritesDrawerOpen,
       activeModalItem,
+      isReducedMotion,
+      setIsReducedMotion,
       resetAllUserData,
     ]
   );

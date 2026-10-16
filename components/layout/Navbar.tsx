@@ -107,7 +107,7 @@ export function Navbar() {
           </div>
         </Link>
 
-        {/* Desktop Navigation */}
+        {/* Desktop Navigation with Shared Layout Glow */}
         <nav className="hidden md:flex items-center gap-1 lg:gap-2">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
@@ -116,19 +116,30 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`relative flex items-center gap-2 px-3.5 py-2 text-xs font-serif uppercase tracking-wider rounded-[2px] transition-all overflow-hidden ${
+                className={`relative flex items-center gap-2 px-3.5 py-2 text-xs font-serif uppercase tracking-wider rounded-[2px] transition-colors ${
                   isActive
-                    ? "bg-surface text-gold border border-gold/40 shadow-sm"
-                    : "text-text-secondary hover:text-text-primary hover:bg-surface/50 border border-transparent"
+                    ? "text-gold font-bold"
+                    : "text-text-secondary hover:text-text-primary"
                 }`}
               >
-                <Icon className="w-3.5 h-3.5 opacity-75" />
-                <span>{link.label}</span>
-                <span
-                  className={`absolute bottom-0 left-0 h-[2px] bg-gold transition-all duration-300 ${
-                    isActive ? "w-full" : "w-0 group-hover:w-full"
-                  }`}
-                />
+                {isActive && (
+                  <>
+                    <motion.div
+                      layoutId="nav-active-pill"
+                      className="absolute inset-0 bg-surface border border-gold/45 rounded-[2px] shadow-[0_0_12px_rgba(229,184,105,0.15)]"
+                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    />
+                    <motion.span
+                      layoutId="nav-active-line"
+                      className="absolute bottom-0 left-2 right-2 h-[2px] bg-gold shadow-[0_0_8px_#E5B869]"
+                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    />
+                  </>
+                )}
+                <span className="relative z-10 flex items-center gap-2">
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-gold opacity-100" : "opacity-75"}`} />
+                  <span>{link.label}</span>
+                </span>
               </Link>
             );
           })}

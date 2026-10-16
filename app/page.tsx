@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight, Wand2, Sparkles, Users, Shield, RefreshCw } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useApp } from "@/context/AppContext";
@@ -15,11 +16,17 @@ import { CharacterCard } from "@/components/cards/CharacterCard";
 import { SpellCard } from "@/components/cards/SpellCard";
 import { BookCard } from "@/components/cards/BookCard";
 import { BookCardSkeleton, CharacterCardSkeleton, SpellCardSkeleton } from "@/components/ui/Skeleton";
+import { MagneticButton } from "@/components/ui/MagneticButton";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 export default function HomePage() {
   const { lang, t } = useTranslation();
-  const { setActiveModalItem } = useApp();
-  const shouldReduceMotion = useReducedMotion();
+  const { setActiveModalItem, isReducedMotion } = useApp();
+  const systemReducedMotion = useReducedMotion();
+  const shouldReduceMotion = systemReducedMotion || isReducedMotion;
   const { scrollY } = useScroll();
   const heroContainerRef = useRef<HTMLDivElement>(null);
 
@@ -37,7 +44,7 @@ export default function HomePage() {
   const [randomCharacter, setRandomCharacter] = useState<Character | null>(null);
   const [isLoadingSpell, setIsLoadingSpell] = useState(false);
 
-  // GSAP Cinematic Entrance & Continuous Idle Float
+  // GSAP Cinematic Entrance, Idle Float & ScrollTrigger Draw Line
   useEffect(() => {
     if (shouldReduceMotion) return;
     const ctx = gsap.context(() => {
@@ -80,6 +87,41 @@ export default function HomePage() {
         yoyo: true,
         ease: "sine.inOut",
       });
+
+      // Ambient Floating Gold Dust Particles (Task 4.3)
+      gsap.to(".hero-gold-dust-1", {
+        y: "-=14",
+        x: "+=6",
+        rotation: 45,
+        duration: 4,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+      });
+      gsap.to(".hero-gold-dust-2", {
+        y: "+=12",
+        x: "-=8",
+        rotation: -45,
+        duration: 3.6,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+      });
+
+      // GSAP ScrollTrigger Drawing Line for Section 4 (Task 4.2)
+      gsap.fromTo(
+        ".scroll-arch-line",
+        { strokeDashoffset: 600 },
+        {
+          strokeDashoffset: 0,
+          duration: 1.4,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: ".daily-prophet-section",
+            start: "top 80%",
+          },
+        }
+      );
     }, heroContainerRef);
 
     return () => ctx.revert();
@@ -183,19 +225,21 @@ export default function HomePage() {
               {t.hero.subtitle}
             </p>
 
-            <div className="flex flex-wrap gap-4 pt-4">
-              <Link
-                href="/characters"
-                className="hero-anim-cta inline-flex items-center gap-2.5 px-6 py-3.5 bg-gold hover:bg-gold/90 text-canvas font-mono text-xs uppercase tracking-widest font-bold rounded-[2px] transition-colors"
-              >
-                <span>{t.hero.exploreBtn}</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+            <div className="flex flex-wrap gap-4 pt-4 items-center">
+              <MagneticButton>
+                <Link
+                  href="/characters"
+                  className="hero-anim-cta inline-flex items-center gap-2.5 px-6 py-3.5 bg-gold hover:bg-gold/90 text-canvas font-mono text-xs uppercase tracking-widest font-bold rounded-[2px] transition-colors shadow-lg shadow-gold/20"
+                >
+                  <span>{t.hero.exploreBtn}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </MagneticButton>
 
               <button
                 type="button"
                 onClick={handleRandomDiscovery}
-                className="hero-anim-cta inline-flex items-center gap-2 px-6 py-3.5 bg-surface hover:bg-surface-elevated border border-border-dark hover:border-gold/50 text-text-primary font-mono text-xs uppercase tracking-widest rounded-[2px] transition-colors cursor-pointer"
+                className="hero-anim-cta inline-flex items-center gap-2 px-6 py-3.5 bg-surface hover:bg-surface-elevated border border-border-dark hover:border-gold/50 text-text-primary font-mono text-xs uppercase tracking-widest rounded-[2px] transition-colors cursor-pointer active:scale-95"
               >
                 <Sparkles className="w-4 h-4 text-gold" />
                 <span>{t.hero.randomBtn}</span>
@@ -209,6 +253,18 @@ export default function HomePage() {
             className="hero-anim-frame lg:col-span-5 flex justify-center lg:justify-end will-change-transform"
           >
             <div className="relative w-full max-w-sm aspect-[4/5] p-3 bg-surface border border-gold/40 rounded-[2px] shadow-2xl">
+              {/* Ambient Floating SVG Stars / Gold Dust (Task 4.3) */}
+              <div className="hero-gold-dust-1 pointer-events-none absolute -top-3 -left-3 w-6 h-6 text-gold opacity-80 z-20" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full drop-shadow-[0_0_8px_#E5B869]">
+                  <path d="M12 0L14 9L23 12L14 15L12 24L10 15L1 12L10 9Z" />
+                </svg>
+              </div>
+              <div className="hero-gold-dust-2 pointer-events-none absolute -bottom-3 -right-3 w-5 h-5 text-gold opacity-70 z-20" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full drop-shadow-[0_0_6px_#E5B869]">
+                  <path d="M12 0L14 9L23 12L14 15L12 24L10 15L1 12L10 9Z" />
+                </svg>
+              </div>
+
               {/* Inner Arch Frame */}
               <div className="w-full h-full border border-border-dark p-4 flex flex-col justify-between relative overflow-hidden bg-canvas">
                 {/* Decorative Arch Runes */}
@@ -346,7 +402,27 @@ export default function HomePage() {
       </section>
 
       {/* 4. SPLIT 50/50: MANTRA ACAK & DAILY PROPHET PRINT BROADSHEET */}
-      <section className="py-16 bg-surface-elevated/40">
+      <section className="py-16 bg-surface-elevated/40 daily-prophet-section relative">
+        {/* Animated Ornate Top Divider Line (Task 4.2 GSAP ScrollTrigger) */}
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 mb-8 overflow-hidden pointer-events-none" aria-hidden="true">
+          <svg className="w-full h-4" viewBox="0 0 1200 16" fill="none">
+            <line
+              x1="0"
+              y1="8"
+              x2="1200"
+              y2="8"
+              stroke="#E5B869"
+              strokeWidth="1.5"
+              strokeDasharray="600"
+              strokeDashoffset="600"
+              className="scroll-arch-line"
+              opacity="0.5"
+            />
+            <circle cx="600" cy="8" r="4" fill="#E5B869" opacity="0.8" />
+            <polygon points="600,2 605,8 600,14 595,8" fill="#E5B869" />
+          </svg>
+        </div>
+
         <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           {/* 50% Left: Interactive Incantation Discovery */}
           <div className="lg:col-span-6 flex flex-col justify-between p-6 sm:p-8 bg-surface border border-border-dark rounded-[2px]">
@@ -383,21 +459,23 @@ export default function HomePage() {
             </div>
 
             <div className="pt-6 mt-6 border-t border-border-dark flex items-center justify-between">
-              <Link
-                href="/spells"
-                className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-gold hover:text-text-primary transition-colors"
-              >
-                <span>View Full Spellbook</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+              <MagneticButton strength={0.25}>
+                <Link
+                  href="/spells"
+                  className="group inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-gold hover:text-text-primary transition-colors"
+                >
+                  <span>View Full Spellbook</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1.5 transition-transform" />
+                </Link>
+              </MagneticButton>
             </div>
           </div>
 
-          {/* 50% Right: The Daily Prophet Newsprint Broadsheet (Task 3.2 Redesign) */}
-          <div className="lg:col-span-6 flex flex-col justify-between p-6 sm:p-8 bg-parchment text-ink border-2 border-parchment-border rounded-[2px] shadow-2xl relative overflow-hidden">
+          {/* 50% Right: The Daily Prophet Newsprint Broadsheet (Task 3.2 & 5.4 Cinemagraph) */}
+          <div className="lg:col-span-6 flex flex-col justify-between p-6 sm:p-8 bg-parchment text-ink border-2 border-parchment-border rounded-[2px] shadow-2xl relative overflow-hidden group/prophet">
             <div className="space-y-4">
               {/* Authentic Masthead with Double-Line Border */}
-              <div className="border-t-2 border-b-2 border-ink py-2 text-center">
+              <div className="border-t-2 border-b-2 border-ink py-2 text-center relative">
                 <span className="font-serif text-3xl sm:text-4xl font-black tracking-[0.18em] text-ink uppercase block leading-none">
                   THE DAILY PROPHET
                 </span>
@@ -408,14 +486,36 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Lead Article with Drop Cap */}
-              <div className="p-4 bg-white/50 border border-ink/20 rounded-[2px] space-y-2.5">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-crimson" />
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-crimson font-bold">
-                    Historical Archival Dispatch
-                  </span>
+              {/* Lead Article with Drop Cap & Cinemagraph Seal */}
+              <div className="p-4 bg-white/50 border border-ink/20 rounded-[2px] space-y-3 relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-crimson" />
+                    <span className="font-mono text-[10px] uppercase tracking-widest text-crimson font-bold">
+                      Historical Archival Dispatch
+                    </span>
+                  </div>
+
+                  {/* Cinemagraph Motion: Rotating Outer Seal Ring & Breathing Shield Emblem (Task 5.4) */}
+                  <div className="relative w-10 h-10 shrink-0" title="Ministry Archival Seal">
+                    <svg
+                      className="w-10 h-10 text-ink/40 animate-[spin_45s_linear_infinite]"
+                      viewBox="0 0 100 100"
+                      fill="none"
+                    >
+                      <circle cx="50" cy="50" r="46" stroke="currentColor" strokeWidth="2" strokeDasharray="6 4" />
+                      <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="1" />
+                      <polygon points="50,12 53,20 47,20" fill="currentColor" />
+                      <polygon points="50,88 53,80 47,80" fill="currentColor" />
+                      <polygon points="12,50 20,47 20,53" fill="currentColor" />
+                      <polygon points="88,50 80,47 80,53" fill="currentColor" />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center animate-pulse">
+                      <Shield className="w-4 h-4 text-crimson" />
+                    </div>
+                  </div>
                 </div>
+
                 <h3 className="font-serif text-xl sm:text-2xl font-bold text-ink leading-tight">
                   Four Ancient Houses of Hogwarts Stand Eternal
                 </h3>
@@ -424,30 +524,32 @@ export default function HomePage() {
                 </p>
               </div>
 
-              {/* Dispatch Column Links */}
+              {/* Dispatch Column Links with Micro-Interaction Darting Arrows */}
               <div className="grid grid-cols-2 gap-3 text-xs font-mono">
                 <Link
                   href="/houses"
-                  className="p-3 bg-white/60 hover:bg-white border border-ink/30 hover:border-ink rounded-[2px] transition-colors block text-center text-ink"
+                  className="group/btn p-3 bg-white/60 hover:bg-white border border-ink/30 hover:border-ink rounded-[2px] transition-all block text-center text-ink shadow-sm hover:shadow"
                 >
-                  <Shield className="w-4 h-4 text-crimson mx-auto mb-1" />
-                  <span className="uppercase block font-serif text-xs font-bold text-ink">
-                    Four Houses
+                  <Shield className="w-4 h-4 text-crimson mx-auto mb-1 group-hover/btn:scale-110 transition-transform" />
+                  <span className="uppercase flex items-center justify-center gap-1 font-serif text-xs font-bold text-ink">
+                    <span>Four Houses</span>
+                    <ArrowRight className="w-3 h-3 text-crimson opacity-60 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all" />
                   </span>
-                  <span className="text-ink/70 text-[9px]">
+                  <span className="text-ink/70 text-[9px] block">
                     Heraldry & Founder Lore
                   </span>
                 </Link>
 
                 <Link
                   href="/characters"
-                  className="p-3 bg-white/60 hover:bg-white border border-ink/30 hover:border-ink rounded-[2px] transition-colors block text-center text-ink"
+                  className="group/btn p-3 bg-white/60 hover:bg-white border border-ink/30 hover:border-ink rounded-[2px] transition-all block text-center text-ink shadow-sm hover:shadow"
                 >
-                  <Users className="w-4 h-4 text-crimson mx-auto mb-1" />
-                  <span className="uppercase block font-serif text-xs font-bold text-ink">
-                    Alumni Records
+                  <Users className="w-4 h-4 text-crimson mx-auto mb-1 group-hover/btn:scale-110 transition-transform" />
+                  <span className="uppercase flex items-center justify-center gap-1 font-serif text-xs font-bold text-ink">
+                    <span>Alumni Records</span>
+                    <ArrowRight className="w-3 h-3 text-crimson opacity-60 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all" />
                   </span>
-                  <span className="text-ink/70 text-[9px]">
+                  <span className="text-ink/70 text-[9px] block">
                     Wizard Chronicles
                   </span>
                 </Link>
@@ -458,9 +560,10 @@ export default function HomePage() {
               <span>Archives Registry Bureau</span>
               <Link
                 href="/settings"
-                className="text-crimson hover:underline uppercase tracking-wider font-bold"
+                className="group/link inline-flex items-center gap-1 text-crimson hover:underline uppercase tracking-wider font-bold"
               >
-                Vault Preferences &rarr;
+                <span>Vault Preferences</span>
+                <ArrowRight className="w-3 h-3 group-hover/link:translate-x-1 transition-transform" />
               </Link>
             </div>
           </div>
